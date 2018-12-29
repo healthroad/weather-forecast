@@ -8,9 +8,10 @@ public class Province extends DataSupport {
 
     private int pid;
 
-    private String provinceName;
+    private String cityName;
 
-    private String cityCode="";
+    private String cityCode;
+
 
     public int getId() {
         return id;
@@ -28,21 +29,20 @@ public class Province extends DataSupport {
         this.pid = pid;
     }
 
-    public String getProvinceName() {
-        return provinceName;
+    public String getCityName() {
+        return cityName;
     }
 
-    public void setProvinceName(String provinceName) {
-        this.provinceName = provinceName;
-    }
-    /*
-    public int getProvinceCode() {
-        return provinceCode;
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
     }
 
-    public void setProvinceCode(int provinceCode) {
-        this.provinceCode = provinceCode;
+    public String getCityCode() {
+        return cityCode;
     }
-    */
+
+    public void setCityCode(String cityCode) {
+        this.cityCode = cityCode;
+    }
 
 }
