@@ -98,10 +98,17 @@ public class ChooseAreaFragment extends Fragment {
                     queryCities();
                 }else if(currentLevel==LEVEL_CITY){
                     String cityCode=cityList.get(position).getCityCode();
-                    Intent intent = new Intent(getActivity(),WeatherActivity.class);
-                    intent.putExtra("city_code",cityCode);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if(getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("city_code", cityCode);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }else if(getActivity() instanceof WeatherActivity){
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(cityCode);
+                    }
                 }
             }
         });
