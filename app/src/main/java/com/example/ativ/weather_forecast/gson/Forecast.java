@@ -18,7 +18,7 @@ public class Forecast {
     @SerializedName("sunset")
     public String sunset;
     @SerializedName("aqi")
-    public int aqi;
+    public float aqi;
     @SerializedName("fx")
     public String fx;
     @SerializedName("fl")

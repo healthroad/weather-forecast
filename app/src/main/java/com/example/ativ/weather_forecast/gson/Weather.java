@@ -2,13 +2,20 @@ package com.example.ativ.weather_forecast.gson;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
+
 
 public class Weather {
-    public String status;
-    public Basic basic;
-    public AQI aqi;
-    public Yesterday yesterday;
-    @SerializedName("forecast")
-    public List<Forecast> forecastList;
+    @SerializedName("time")
+    public String systemTime;
+
+    public CityInfo cityInfo;
+    @SerializedName("date")
+    public String date;
+    @SerializedName("message")
+    public String message;
+    @SerializedName("status")
+    public int status;
+
+    public Data data;
+
 }
