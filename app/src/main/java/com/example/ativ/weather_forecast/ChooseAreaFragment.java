@@ -4,13 +4,13 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,8 +33,6 @@ import okhttp3.Response;
 
 public class ChooseAreaFragment extends Fragment {
 
-    private static final String TAG = "ChooseAreaFragment";
-
     public static final int LEVEL_PROVINCE = 0;
 
     public static final int LEVEL_CITY = 1;
@@ -45,13 +43,15 @@ public class ChooseAreaFragment extends Fragment {
 
     private Button backButton;
 
+    private EditText searchText;
+
+    private Button searchButton;
+
     private ListView listView;
 
     private ArrayAdapter<String> adapter;
 
     private List<String> dataList = new ArrayList<>();
-
-
 
     /**
      * 省列表
@@ -81,6 +81,8 @@ public class ChooseAreaFragment extends Fragment {
         View view = inflater.inflate(R.layout.choose_area, container, false);
         titleText = (TextView) view.findViewById(R.id.title_text);
         backButton = (Button) view.findViewById(R.id.back_button);
+        searchText = (EditText) view.findViewById(R.id.search_text);
+        searchButton=(Button) view.findViewById(R.id.search_button);
         listView = (ListView) view.findViewById(R.id.list_view);
         adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, dataList);
         listView.setAdapter(adapter);
@@ -117,6 +119,23 @@ public class ChooseAreaFragment extends Fragment {
             public void onClick(View v) {
                 if (currentLevel == LEVEL_CITY) {
                     queryProvinces();
+                }
+            }
+        });
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String cityCode=searchText.getText().toString();
+                if(getActivity() instanceof MainActivity) {
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("city_code", cityCode);
+                    startActivity(intent);
+                    getActivity().finish();
+                }else if(getActivity() instanceof WeatherActivity){
+                    WeatherActivity activity = (WeatherActivity) getActivity();
+                    activity.drawerLayout.closeDrawers();
+                    activity.swipeRefresh.setRefreshing(true);
+                    activity.requestWeather(cityCode);
                 }
             }
         });

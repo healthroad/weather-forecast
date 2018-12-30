@@ -50,6 +50,8 @@ public class WeatherActivity extends AppCompatActivity {
 
     private TextView weatherInfoText;
 
+    private TextView systemTimeText;
+
     private LinearLayout forecastLayout;
 
     private TextView qualityText;
@@ -85,6 +87,7 @@ public class WeatherActivity extends AppCompatActivity {
         titleUpdateTime = (TextView) findViewById(R.id.title_update_time);
         degreeText = (TextView) findViewById(R.id.degree_text);
         weatherInfoText = (TextView) findViewById(R.id.weather_info_text);
+        systemTimeText = (TextView) findViewById(R.id.system_time_text);
         forecastLayout = (LinearLayout) findViewById(R.id.forecast_layout);
         qualityText=(TextView) findViewById(R.id.quality_text);
         aqiText = (TextView) findViewById(R.id.aqi_text);
@@ -104,6 +107,7 @@ public class WeatherActivity extends AppCompatActivity {
             Weather weather = Utility.handleWeatherResponse(weatherString);
             mCityCode=weather.cityInfo.cityCode;
             showWeatherInfo(weather);
+            Toast.makeText(WeatherActivity.this, "从缓存中读取天气信息", Toast.LENGTH_SHORT).show();
         } else {
             // 无缓存时去服务器查询天气
             mCityCode = getIntent().getStringExtra("city_code");
@@ -150,7 +154,7 @@ public class WeatherActivity extends AppCompatActivity {
                             mCityCode=weather.cityInfo.cityCode;
                             showWeatherInfo(weather);
                         } else {
-                            Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(WeatherActivity.this, "输入的城市ID错误，获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
                         swipeRefresh.setRefreshing(false);
                     }
@@ -207,10 +211,12 @@ public class WeatherActivity extends AppCompatActivity {
         String updateTime = weather.cityInfo.weatherTime;
         String degree = weather.data.wendu + "℃";
         String weatherInfo = weather.data.forecastList.get(0).type;
+        String systemTime = weather.systemTime;
         titleCity.setText(cityName);
         titleUpdateTime.setText(updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
+        systemTimeText.setText(systemTime);
         forecastLayout.removeAllViews();
         for (Forecast forecast : weather.data.forecastList) {
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
