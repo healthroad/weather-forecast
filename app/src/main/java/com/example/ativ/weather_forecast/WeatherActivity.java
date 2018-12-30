@@ -22,7 +22,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.ativ.weather_forecast.gson.Forecast;
 import com.example.ativ.weather_forecast.gson.Weather;
-//import com.example.ativ.weather_forecast.service.AutoUpdateService;
+import com.example.ativ.weather_forecast.service.AutoUpdateService;
 import com.example.ativ.weather_forecast.util.HttpUtil;
 import com.example.ativ.weather_forecast.util.Utility;
 
@@ -240,8 +240,8 @@ public class WeatherActivity extends AppCompatActivity {
         noticeText.setText(notice);
 
         weatherLayout.setVisibility(View.VISIBLE);
-        //Intent intent = new Intent(this, AutoUpdateService.class);
-        //startService(intent);
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
 }
