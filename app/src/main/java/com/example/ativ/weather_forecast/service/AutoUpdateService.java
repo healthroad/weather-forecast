@@ -9,12 +9,7 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.example.ativ.weather_forecast.R;
-import com.example.ativ.weather_forecast.WeatherActivity;
 import com.example.ativ.weather_forecast.gson.Weather;
 import com.example.ativ.weather_forecast.util.HttpUtil;
 import com.example.ativ.weather_forecast.util.Utility;

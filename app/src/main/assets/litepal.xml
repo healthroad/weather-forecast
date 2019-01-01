@@ -4,6 +4,6 @@
     <list>
         <mapping class="com.example.ativ.weather_forecast.db.Province"/>
         <mapping class="com.example.ativ.weather_forecast.db.City"/>
-
+        <mapping class="com.example.ativ.weather_forecast.db.WeatherApi"/>
     </list>
 </litepal>

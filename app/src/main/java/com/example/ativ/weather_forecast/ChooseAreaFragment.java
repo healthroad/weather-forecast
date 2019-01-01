@@ -63,7 +63,6 @@ public class ChooseAreaFragment extends Fragment {
      */
     private List<City> cityList;
 
-
     /**
      * 选中的省份
      */
@@ -135,7 +134,7 @@ public class ChooseAreaFragment extends Fragment {
                     WeatherActivity activity = (WeatherActivity) getActivity();
                     activity.drawerLayout.closeDrawers();
                     activity.swipeRefresh.setRefreshing(true);
-                    activity.requestWeather(cityCode);
+                    activity.searchjudge(cityCode);
                 }
             }
         });

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -25,8 +26,16 @@ import com.example.ativ.weather_forecast.gson.Weather;
 import com.example.ativ.weather_forecast.service.AutoUpdateService;
 import com.example.ativ.weather_forecast.util.HttpUtil;
 import com.example.ativ.weather_forecast.util.Utility;
+import com.example.ativ.weather_forecast.db.WeatherApi;
+
+import org.litepal.LitePal;
+import org.litepal.crud.DataSupport;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -70,6 +79,8 @@ public class WeatherActivity extends AppCompatActivity {
 
     private String mCityCode;
 
+    private List<WeatherApi> weatherApiList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,11 +106,11 @@ public class WeatherActivity extends AppCompatActivity {
         pm10Text=(TextView) findViewById(R.id.pm10_text);
         ganmaoText = (TextView) findViewById(R.id.ganmao_text);
         noticeText = (TextView) findViewById(R.id.notice_text);
-
         swipeRefresh = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh);
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navButton = (Button) findViewById(R.id.nav_button);
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = prefs.getString("weather", null);
         if (weatherString != null) {
@@ -107,12 +118,13 @@ public class WeatherActivity extends AppCompatActivity {
             Weather weather = Utility.handleWeatherResponse(weatherString);
             mCityCode=weather.cityInfo.cityCode;
             showWeatherInfo(weather);
-            Toast.makeText(WeatherActivity.this, "从缓存中读取天气信息", Toast.LENGTH_SHORT).show();
+            Toast.makeText(WeatherActivity.this, "从缓存中读取天气信息。", Toast.LENGTH_SHORT).show();
         } else {
             // 无缓存时去服务器查询天气
             mCityCode = getIntent().getStringExtra("city_code");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(mCityCode);
+            Toast.makeText(WeatherActivity.this, "从服务器中查询天气信息。", Toast.LENGTH_SHORT).show();
         }
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -134,6 +146,76 @@ public class WeatherActivity extends AppCompatActivity {
         }
     }
 
+
+    /*
+    * 当传入城市id后，先判断缓存，缓存当天的id，无缓冲再从服务器查找
+    * */
+    public void searchjudge(final String cityCode){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        weatherApiList=DataSupport.where("date=?",dateFormat.format(new Date())).find(WeatherApi.class);
+        if(weatherApiList.size()>0){
+            for(WeatherApi weatherApi : weatherApiList){
+                if(cityCode.equals(weatherApi.getCityCode())) {
+                    Weather weather = Utility.handleWeatherResponse(weatherApi.getResponseText());
+                    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                    editor.putString("weather", weatherApi.getResponseText());
+                    editor.apply();
+                    mCityCode=weatherApi.getCityCode();
+                    showWeatherInfo(weather);
+                    swipeRefresh.setRefreshing(false);
+                    Toast.makeText(WeatherActivity.this, "从缓存中读取天气信息!", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+            searchWeather(cityCode);
+        }else{
+            searchWeather(cityCode);
+        }
+    }
+
+    public void searchWeather(final String cityCode){
+        String weatherUrl = "http://t.weather.sojson.com/api/weather/city/" + cityCode;
+        HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                final String responseText = response.body().string();
+                final Weather weather = Utility.handleWeatherResponse(responseText);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (weather != null && weather.status == 200) {
+                            WeatherApi weatherApi = new WeatherApi();
+                            weatherApi.setCityCode(weather.cityInfo.cityCode);
+                            weatherApi.setResponseText(responseText);
+                            weatherApi.setDate(weather.date);
+                            weatherApi.save();
+                            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                            editor.putString("weather", responseText);
+                            editor.apply();
+                            mCityCode=weather.cityInfo.cityCode;
+                            showWeatherInfo(weather);
+                            Toast.makeText(WeatherActivity.this, "从服务器中查询天气信息!", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(WeatherActivity.this, "输入的城市ID错误，获取天气信息失败!", Toast.LENGTH_LONG).show();
+                        }
+                        swipeRefresh.setRefreshing(false);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(WeatherActivity.this, "获取天气信息失败!", Toast.LENGTH_SHORT).show();
+                        swipeRefresh.setRefreshing(false);
+                    }
+                });
+            }
+        });
+    }
     /**
      * 根据天气id请求城市天气信息。
      */
@@ -153,8 +235,9 @@ public class WeatherActivity extends AppCompatActivity {
                             editor.apply();
                             mCityCode=weather.cityInfo.cityCode;
                             showWeatherInfo(weather);
+                            Toast.makeText(WeatherActivity.this, "从服务器中查询天气信息", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(WeatherActivity.this, "输入的城市ID错误，获取天气信息失败", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
                         swipeRefresh.setRefreshing(false);
                     }
@@ -167,13 +250,13 @@ public class WeatherActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(WeatherActivity.this, "获取天气信息失败。", Toast.LENGTH_SHORT).show();
                         swipeRefresh.setRefreshing(false);
                     }
                 });
             }
         });
-        //loadBingPic();
+        loadBingPic();
     }
 
     /**
