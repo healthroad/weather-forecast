@@ -96,7 +96,22 @@ public class ChooseAreaFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(currentLevel==LEVEL_PROVINCE){
                     selectedProvince=provinceList.get(position);
-                    queryCities();
+                    if(selectedProvince.getId()==32||selectedProvince.getId()==33){
+                        String cityCode = selectedProvince.getCityCode();
+                        if(getActivity() instanceof MainActivity) {
+                            Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                            intent.putExtra("city_code", cityCode);
+                            startActivity(intent);
+                            getActivity().finish();
+                        }else if(getActivity() instanceof WeatherActivity){
+                            WeatherActivity activity = (WeatherActivity) getActivity();
+                            activity.drawerLayout.closeDrawers();
+                            activity.swipeRefresh.setRefreshing(true);
+                            activity.requestWeather(cityCode);
+                        }
+                    }else{
+                         queryCities();
+                    }
                 }else if(currentLevel==LEVEL_CITY){
                     String cityCode=cityList.get(position).getCityCode();
                     if(getActivity() instanceof MainActivity) {

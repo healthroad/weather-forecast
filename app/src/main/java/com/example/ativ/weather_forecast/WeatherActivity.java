@@ -184,10 +184,11 @@ public class WeatherActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         if (weather != null && weather.status == 200) {
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
                             WeatherApi weatherApi = new WeatherApi();
                             weatherApi.setCityCode(weather.cityInfo.cityCode);
                             weatherApi.setResponseText(responseText);
-                            weatherApi.setDate(weather.date);
+                            weatherApi.setDate(dateFormat.format(new Date()));
                             weatherApi.save();
                             SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("weather", responseText);
